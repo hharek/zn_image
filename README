@@ -1,0 +1,5 @@
+Class for php to work with images
+
+REQUIREMENTS:
+- PHP 5.2 and up
+- PHP-module GD (http://php.net/manual/en/book.image.php)
