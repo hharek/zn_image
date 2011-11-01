@@ -36,22 +36,5 @@ try
 catch (Exception $e)
 {
 	echo $e->getMessage();
-}
-
-
-/*
-$file_in = "/site/znrisunok/www/img/01.jpg";
-$file_out = "/site/znrisunok/www/main/01_800_400_bolishe.png";
-$file_out = "/site/znrisunok/www/main/02_800_400_menshe.png";
-$file_out = "/site/znrisunok/www/main/03_800_400_ravno.png";
-
-ZN_Image::resize($file_in, 800, 400, $file_out);
-
-$file_in = "/site/znrisunok/www/img/01.jpg";
-$file_apply = "/site/znrisunok/www/img/apply.png";
-$file_out = "/site/znrisunok/www/main/04_image_s_zashitoy.png";
-	
-ZN_Image::apply_image($file_in, $file_apply, $file_out);
-*/
-	
+}	
 ?>
