@@ -32,6 +32,11 @@ try
 	/* Наложить водяной знак */
 	ZN_Image::apply_image("main.jpg", "watermark.png", "main_s_zashitoy.jpg", 50, "right", "bottom", 20);
 	
+	/* Выгрузить рисунок */
+	ZN_Image::output("main.jpg", 400, 300);							// Выгрузить рисунок с новым расширением
+	ZN_Image::output("main.jpg", 100, 100, "new.gif", false, "<");	// <img src="/image.php" width="300" height="200" />
+	
+	
 }
 catch (Exception $e)
 {

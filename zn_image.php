@@ -618,5 +618,177 @@ class ZN_Image
 		
 		return true;
 	}
+	
+	/**
+	 * Вывод рисунка с новыми размерами
+	 *
+	 * @param string $file_in
+	 * @param int $width
+	 * @param int $height
+	 * @param string $file_name_output
+	 * @param bool $download_window
+	 * @param string $method (>,<,=)
+	 * @return bool
+	 */
+	public static function output($file_in, $width, $height, $file_name_output="", $download_window=true, $method=">")
+	{
+		/* Проверка */
+		$settings = self::get_settings($file_in);
+		$width_in = $settings['width'];
+		$height_in = $settings['height'];
+		
+		$width = intval($width);
+		$height = intval($height);
+		
+		if(empty($file_name_output))
+		{$file_name_output = basename($file_in);}
+		
+		if(preg_match("#\.(jpg|png|gif)$#isu", $file_name_output, $sovpal))
+		{$ext = $sovpal[1];}
+		else 
+		{$ext = $settings['type'];}
+		
+		/* Метод */
+		if(!in_array($method, array(">", "<", "=")))
+		{throw new Exception("Метод задан неверно");}
+		
+		/* Уменьшить размер */
+		switch ($method)
+		{
+			/* Не больше заданного размера */
+			case ">":
+			{
+				if(($width/$width_in) <= ($height/$height_in))
+				{
+					$width_out = $width;
+					$height_out = $height_in * ($width/$width_in);
+				}
+				else 
+				{
+					$height_out = $height;
+					$width_out = $width_in * ($height/$height_in);
+				}
+			}
+			break;
+			
+			/* Не меньше заданного размера */
+			case "<":
+			{
+				if(($width/$width_in) >= ($height/$height_in))
+				{
+					$width_out = $width;
+					$height_out = $height_in * ($width/$width_in);
+					$y = ($height_out / 2) - ($height / 2);
+					$x = 0;
+				}
+				else 
+				{
+					$height_out = $height;
+					$width_out = $width_in * ($height/$height_in);
+					$x = ($width_out / 2) - ($width / 2);
+					$y = 0;
+				}
+			}
+			break;
+			
+			/* В точности заданный размер */
+			case "=":
+			{
+				$width_out = $width;
+				$height_out = $height;
+			}
+			break;
+		}
+		
+		/* Входящий файл */
+		switch ($settings['type'])
+		{
+			case "jpg":
+			{$im = imagecreatefromjpeg($file_in);}
+			break;
+			
+			case "png":
+			{$im = imagecreatefrompng($file_in);}
+			break;
+			
+			case "gif":
+			{$im = imagecreatefromgif($file_in);}
+			break;
+		}
+		
+		/* Изменить размер если метод >, = */
+		if($method == ">" or $method == "=")
+		{
+			$im_out = imagecreatetruecolor($width_out, $height_out);
+			imagecopyresampled($im_out, $im, 0, 0, 0, 0, $width_out, $height_out, imagesx($im), imagesy($im));
+			imagedestroy($im);
+		}
+		/* Изменить размер если метод < */
+		else 
+		{
+			/* Поготовим к срезу */
+			$im_crop = imagecreatetruecolor($width_out, $height_out);
+			imagecopyresampled($im_crop, $im, 0, 0, 0, 0, $width_out, $height_out, imagesx($im), imagesy($im));
+			imagedestroy($im);
+			
+			/* Срез */
+			$im_out = imagecreatetruecolor($width, $height);
+			imagecopy($im_out, $im_crop, 0, 0, $x, $y, imagesx($im_crop), imagesy($im_crop));
+			imagedestroy($im_crop);
+		}
+		
+		/* Заголовок */
+		if(!$download_window)
+		{
+			switch ($ext)
+			{
+				case "jpg";
+				{header('Content-type: image/jpeg');}
+				break;
+			
+				case "png";
+				{header('Content-type: image/png'); }
+				break;
+			
+				case "gif";
+				{header('Content-type: image/gif');}
+				break;
+			}
+		}
+		else
+		{ 
+			header("Content-Type: application/octet-stream;");
+			header("Content-Disposition: attachment; filename=\"{$file_name_output}\"");
+		}
+		
+		/* Исходящий */
+		switch ($ext)
+		{
+			case "jpg":
+			{
+				if(!@imagejpeg($im_out, null, 100))
+				{throw new Exception("Не удалось создать файл \"{$file_name_output}\"");}
+			}
+			break;
+			
+			case "png":
+			{
+				if(!@imagepng($im_out))
+				{throw new Exception("Не удалось создать файл \"{$file_name_output}\"");}
+			}
+			break;
+			
+			case "gif":
+			{
+				if(!imagegif($im_out))
+				{throw new Exception("Не удалось создать файл \"{$file_name_output}\"");}
+			}
+			break;
+		}
+		
+		imagedestroy($im_out);
+		
+		return true;
+	}
 }
 ?>
